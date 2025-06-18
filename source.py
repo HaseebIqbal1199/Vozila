@@ -202,6 +202,115 @@ def is_valid_youtube_url(url):
     return youtube_regex.match(url) or playlist_regex.match(url)
 
 def get_video_info(url):
+    """Get video information without downloading - with multiple fallback strategies"""
+    
+    # List of client strategies to try in order
+    client_strategies = [
+        # Strategy 1: tv_embedded (most reliable for bypassing restrictions)
+        {
+            'name': 'tv_embedded',
+            'player_client': 'tv_embedded',
+            'player_skip': 'webpage',
+        },
+        # Strategy 2: web_embedded (good for public videos)
+        {
+            'name': 'web_embedded', 
+            'player_client': 'web_embedded',
+            'player_skip': 'webpage',
+        },
+        # Strategy 3: mweb (mobile web, good fallback)
+        {
+            'name': 'mweb',
+            'player_client': 'mweb',
+            'player_skip': 'configs',
+        },
+        # Strategy 4: android (last resort)
+        {
+            'name': 'android',
+            'player_client': 'android',
+            'player_skip': 'webpage',
+        }
+    ]
+    
+    # User agents to rotate
+    user_agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0'
+    ]
+    
+    import random
+    
+    # Try each client strategy
+    for i, strategy in enumerate(client_strategies):
+        try:
+            print(f"Trying strategy {i+1}: {strategy['name']}")
+            
+            selected_ua = random.choice(user_agents)
+            
+            ydl_opts = {
+                'quiet': True,
+                'no_warnings': True,
+                'extract_flat': False,
+                'force_json': True,
+                # Use current strategy
+                'extractor_args': {
+                    'youtube': {
+                        'player_client': strategy['player_client'],
+                        'player_skip': strategy['player_skip'],
+                        # Additional bypass options
+                        'skip': ['dash', 'hls'] if i < 2 else [],  # Skip for first two strategies
+                        'innertube_host': 'studio.youtube.com' if i == 0 else None,
+                        'comment_sort': ['top']
+                    }
+                },
+                # Enhanced headers
+                'http_headers': {
+                    'User-Agent': selected_ua,
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'DNT': '1',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Sec-Fetch-Dest': 'document',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'none',
+                    'Sec-Fetch-User': '?1',
+                    'Cache-Control': 'max-age=0',
+                    'Referer': 'https://www.youtube.com/',
+                    'Origin': 'https://www.youtube.com'
+                },
+                # Bypass restrictions
+                'age_limit': None,
+                'geo_bypass': True,
+                'geo_bypass_country': 'US',
+                # Rate limiting (increase delay for each retry)
+                'sleep_interval': 2 + i,
+                'max_sleep_interval': 5 + i * 2,
+                # Retry settings
+                'retries': 2,
+                'fragment_retries': 2,
+                # Skip unavailable fragments
+                'skip_unavailable_fragments': True,
+            }
+            
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                print(f"Success with strategy: {strategy['name']}")
+                return info
+                
+        except Exception as e:
+            print(f"Strategy {strategy['name']} failed: {str(e)[:100]}...")
+            # Continue to next strategy
+            continue
+    
+    # If all strategies failed, raise the last error
+    raise Exception("All extraction strategies failed. Video may be unavailable, private, or region-blocked.")
+
+def get_video_info_old(url):
     """Get video information without downloading"""
     try:
         # Rotate user agents to avoid detection
@@ -650,18 +759,22 @@ def start_download():
         cookie_file = save_cookies_to_file(cookies_content, download_id)
         if cookie_file:
             uploaded_cookies[download_id] = cookie_file
-    
-    # Create temporary directory for this download
+      # Create temporary directory for this download
     temp_dir = tempfile.mkdtemp(prefix=f'yt_download_{download_id}_')
-      # Start download in background thread with fallback
-    def download_with_fallback():
-        try:
-            download_video(url, quality, download_id, temp_dir)
-        except Exception as e:
-            print(f"Primary download failed, trying alternative method: {e}")
-            download_video_alternative(url, quality, download_id, temp_dir)
     
-    thread = threading.Thread(target=download_with_fallback)
+    # Start download in background thread with robust fallback
+    def download_with_robust_fallback():
+        try:
+            # First try the new robust fallback method
+            cookies_file = uploaded_cookies.get(download_id)
+            download_video_with_fallback(url, quality, download_id, temp_dir, cookies_file)
+        except Exception as e:
+            print(f"All fallback methods failed: {e}")
+            if download_id in download_progress:
+                download_progress[download_id].status = 'error'
+                download_progress[download_id].error = f"Download failed: {str(e)}"
+    
+    thread = threading.Thread(target=download_with_robust_fallback)
     thread.daemon = True
     thread.start()
     
@@ -798,7 +911,162 @@ def upload_cookies():
     except Exception as e:
         return jsonify({'error': f'Cookie upload failed: {str(e)}'}), 500
 
-if __name__ == "__main__":
-    port = int(os.getenv('PORT', 3000))
-    debug = os.getenv('FLASK_ENV') != 'production'
-    app.run(host='0.0.0.0', port=port, debug=debug)
+def download_video_with_fallback(url, quality, download_id, output_path, cookies=None):
+    """Download video with multiple fallback strategies"""
+    
+    # Client strategies for downloads
+    client_strategies = [
+        {
+            'name': 'tv_embedded',
+            'player_client': 'tv_embedded',
+            'player_skip': 'webpage',
+        },
+        {
+            'name': 'web_embedded', 
+            'player_client': 'web_embedded',
+            'player_skip': 'webpage',
+        },
+        {
+            'name': 'mweb',
+            'player_client': 'mweb',
+            'player_skip': 'configs',
+        }
+    ]
+    
+    progress_tracker = DownloadProgress(download_id)
+    download_progress[download_id] = progress_tracker
+    
+    # Find FFmpeg path  
+    ffmpeg_path = find_ffmpeg()
+    
+    # Get format selector using the helper function
+    format_selector = get_format_selector(quality, bool(ffmpeg_path))
+    
+    # Detect if this format selection will need merging
+    needs_merging = ffmpeg_path and ('+' in format_selector)
+    progress_tracker.set_merging_needed(needs_merging)
+    
+    # Enhanced progress hook for FFmpeg merging
+    def enhanced_progress_hook(d):
+        progress_tracker.hook(d)
+        if d['status'] == 'finished' and needs_merging:
+            # Start simulating merge progress
+            def simulate_merge_progress():
+                import time
+                for i in range(0, 101, 5):
+                    if progress_tracker.status == 'completed':
+                        break
+                    progress_tracker.update_merge_progress(i)
+                    time.sleep(0.1)
+                
+            import threading
+            merge_thread = threading.Thread(target=simulate_merge_progress)
+            merge_thread.daemon = True
+            merge_thread.start()
+    
+    # Try each strategy
+    for i, strategy in enumerate(client_strategies):
+        try:
+            print(f"Download attempt {i+1} with {strategy['name']}")
+            
+            user_agents = [
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            ]
+            
+            import random
+            selected_ua = random.choice(user_agents)
+            
+            ydl_opts = {
+                'format': format_selector,
+                'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
+                'progress_hooks': [enhanced_progress_hook],
+                'extractaudio': quality == 'audio',
+                'audioformat': 'mp3' if quality == 'audio' else None,
+                'writeinfojson': False,
+                'writeautomaticsub': False,
+                'writesubtitles': False,
+                'keepvideo': False,
+                'ffmpeg_location': ffmpeg_path if ffmpeg_path else None,
+                
+                # Use current strategy
+                'extractor_args': {
+                    'youtube': {
+                        'player_client': strategy['player_client'],
+                        'player_skip': strategy['player_skip'],
+                        'skip': ['dash', 'hls'] if i < 2 else [],
+                        'innertube_host': 'studio.youtube.com' if i == 0 else None,
+                        'comment_sort': ['top']
+                    }
+                },
+                
+                'http_headers': {
+                    'User-Agent': selected_ua,
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'DNT': '1',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Sec-Fetch-Dest': 'document',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'none',
+                    'Sec-Fetch-User': '?1',
+                    'Cache-Control': 'max-age=0',
+                    'Referer': 'https://www.youtube.com/',
+                    'Origin': 'https://www.youtube.com'
+                },
+                
+                'cookiefile': cookies,
+                'retries': 3,
+                'fragment_retries': 3,
+                'sleep_interval': 3 + i,
+                'max_sleep_interval': 8 + i * 2,
+                'no_warnings': True,
+                'ignoreerrors': False,
+                'geo_bypass': True,
+                'geo_bypass_country': 'US',
+                'merge_output_format': 'mp4',
+                'prefer_free_formats': False,
+                'postprocessors': [] if not ffmpeg_path else [],
+                'postprocessor_args': {
+                    'ffmpeg': [
+                        '-c:v', 'copy',
+                        '-c:a', 'aac',
+                        '-b:a', '192k',
+                        '-movflags', '+faststart'
+                    ] if ffmpeg_path else []
+                },
+                'skip_unavailable_fragments': True,
+            }
+            
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                
+                # Store file information
+                if 'entries' in info:  # Playlist
+                    files = []
+                    for entry in info['entries']:
+                        if entry:
+                            filename = ydl.prepare_filename(entry)
+                            if os.path.exists(filename):
+                                files.append(filename)
+                    download_files[download_id] = files
+                else:  # Single video
+                    filename = ydl.prepare_filename(info)
+                    if os.path.exists(filename):
+                        download_files[download_id] = [filename]
+                
+                print(f"Download successful with strategy: {strategy['name']}")
+                progress_tracker.status = 'completed'
+                return
+                        
+        except Exception as e:
+            print(f"Strategy {strategy['name']} failed: {str(e)[:100]}...")
+            # Continue to next strategy
+            continue
+    
+    # If all strategies failed
+    progress_tracker.status = 'error'
+    progress_tracker.error = "All download strategies failed. Video may be unavailable, private, or region-blocked."
