@@ -138,3 +138,14 @@ Thumbs.db
 
 # Railway
 .railway/
+
+# README files (except main README.md)
+DEPLOYMENT_GUIDE.md
+MARKETING_GUIDE.md
+DEPLOYMENT_SUCCESS.md
+RENDER_DEPLOYMENT.md
+FREE_HOSTING_COMPARISON.md
+*_GUIDE.md
+*_README.md
+readme.txt
+README.txt

@@ -1,16 +1,16 @@
-# 🎯 Complete Marketing & Indexing Strategy for Vozilla
+# 🎯 Complete Marketing & Indexing Strategy for Vozila
 
 ## 📈 Phase 1: Search Engine Indexing (Week 1)
 
 ### Google Search Console Setup
 1. **Add Property**
    - Go to [Google Search Console](https://search.google.com/search-console)
-   - Add your domain: `vozilla.com`
+   - Add your domain: `vozila.com`
    - Verify ownership using HTML file method
 
 2. **Submit Sitemap**
    - Navigate to Sitemaps section
-   - Submit: `https://vozilla.com/sitemap.xml`
+   - Submit: `https://vozila.com/sitemap.xml`
    - Monitor indexing status daily
 
 3. **Request Indexing**

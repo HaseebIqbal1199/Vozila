@@ -24,13 +24,25 @@ load_dotenv()
 # FFmpeg handling functions
 def find_ffmpeg():
     """Find FFmpeg executable in common locations"""
-    possible_paths = [
-        r'C:\ffmpeg\bin\ffmpeg.exe',
-        r'C:\Program Files\ffmpeg\bin\ffmpeg.exe',
-        r'C:\Program Files (x86)\ffmpeg\bin\ffmpeg.exe',
-        'ffmpeg.exe',  # If it's in PATH
-        'ffmpeg'       # Unix-style
-    ]
+    # Check if running on Linux/Unix (Render uses Ubuntu)
+    if os.name == 'posix':
+        # Linux/Unix paths (Render uses Ubuntu)
+        possible_paths = [
+            'ffmpeg',  # Should be in PATH on Render
+            '/usr/bin/ffmpeg',
+            '/usr/local/bin/ffmpeg',
+            '/opt/render/project/src/ffmpeg',  # Custom Render path if needed
+            '/app/vendor/ffmpeg/ffmpeg'  # Common Docker/container path
+        ]
+    else:
+        # Windows paths
+        possible_paths = [
+            r'C:\ffmpeg\bin\ffmpeg.exe',
+            r'C:\Program Files\ffmpeg\bin\ffmpeg.exe',
+            r'C:\Program Files (x86)\ffmpeg\bin\ffmpeg.exe',
+            'ffmpeg.exe',  # If it's in PATH
+            'ffmpeg'       # Fallback
+        ]
     
     for path in possible_paths:
         try:
@@ -41,7 +53,8 @@ def find_ffmpeg():
             if result.returncode == 0:
                 print(f"Found FFmpeg at: {path}")
                 return path
-        except:
+        except Exception as e:
+            print(f"Failed to check FFmpeg at {path}: {e}")
             continue
     
     print("FFmpeg not found in any common locations")
@@ -704,4 +717,6 @@ def upload_cookies():
         return jsonify({'error': f'Cookie upload failed: {str(e)}'}), 500
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=3000, debug=True)
+    port = int(os.getenv('PORT', 3000))
+    debug = os.getenv('FLASK_ENV') != 'production'
+    app.run(host='0.0.0.0', port=port, debug=debug)

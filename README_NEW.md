@@ -1,8 +1,8 @@
-# 🎥 Vozila
+# 🎥 Vozilla
 
 A professional SaaS-level YouTube video and playlist downloader with premium UI and advanced features.
 
-![Vozila](https://img.shields.io/badge/Vozila-YouTube%20Downloader-blue?style=for-the-badge)
+![Vozilla](https://img.shields.io/badge/Vozilla-YouTube%20Downloader-blue?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.8+-green?style=for-the-badge&logo=python)
 ![Flask](https://img.shields.io/badge/Flask-2.3+-red?style=for-the-badge&logo=flask)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
@@ -96,7 +96,7 @@ gunicorn --bind 0.0.0.0:3000 source:app
 
 ## 📊 SEO & Marketing
 
-Vozila comes with enterprise-level SEO optimization:
+Vozilla comes with enterprise-level SEO optimization:
 - ✅ Complete meta tags and structured data
 - ✅ Open Graph and Twitter Card support
 - ✅ Robots.txt and sitemap.xml

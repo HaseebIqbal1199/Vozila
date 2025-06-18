@@ -1,4 +1,4 @@
-# 🚀 Complete Railway Deployment & SEO Guide for Vozilla
+# 🚀 Complete Railway Deployment & SEO Guide for Vozila
 
 ## 📋 Table of Contents
 1. [Pre-Deployment Checklist](#pre-deployment-checklist)
@@ -16,9 +16,9 @@
 ## 🔧 Pre-Deployment Checklist
 
 ### 1. **Domain Preparation**
-- [ ] Purchase your domain (e.g., `vozilla.com`)
+- [ ] Purchase your domain (e.g., `vozila.com`)
 - [ ] Have access to domain DNS settings
-- [ ] Prepare subdomain if needed (e.g., `www.vozilla.com`)
+- [ ] Prepare subdomain if needed (e.g., `www.vozila.com`)
 
 ### 2. **Account Setup**
 - [ ] Create Railway account at [railway.app](https://railway.app)
@@ -64,11 +64,11 @@
 1. In your Railway project, go to **"Settings"** tab
 2. Scroll to **"Domains"** section
 3. Click **"Custom Domain"**
-4. Enter your domain: `vozilla.com`
+4. Enter your domain: `vozila.com`
 5. Railway will provide CNAME record details
 
 ### Step 2: Configure DNS Records
-**For Root Domain (vozilla.com):**
+**For Root Domain (vozila.com):**
 1. Go to your domain registrar's DNS settings
 2. Add **A Record**:
    - **Name**: `@` (or leave blank)
@@ -84,7 +84,7 @@
 ### Step 3: Domain Verification
 1. Wait 15-30 minutes for DNS propagation
 2. Check domain status in Railway dashboard
-3. Test both `vozilla.com` and `www.vozilla.com`
+3. Test both `vozila.com` and `www.vozila.com`
 
 ---
 
@@ -113,7 +113,7 @@ def force_https():
 Update your `templates/index.html` file:
 
 ```html
-<!-- Update all URLs from vozilla.com to your actual domain -->
+<!-- Update all URLs from vozila.com to your actual domain -->
 <meta property="og:url" content="https://yourdomain.com">
 <link rel="canonical" href="https://yourdomain.com">
 ```

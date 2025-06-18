@@ -1,4 +1,4 @@
-# 🎯 DEPLOYMENT SUCCESS CHECKLIST FOR VOZILLA
+# 🎯 DEPLOYMENT SUCCESS CHECKLIST FOR VOZILA
 
 ## ✅ What We've Accomplished
 
@@ -53,7 +53,7 @@ git push origin main
 
 ### 3. **Add Custom Domain** (15 minutes)
 1. In Railway dashboard → Settings → Domains
-2. Add your domain (e.g., `vozilla.com`)
+2. Add your domain (e.g., `vozila.com`)
 3. Configure DNS records at your domain registrar
 4. Wait for SSL certificate activation
 
