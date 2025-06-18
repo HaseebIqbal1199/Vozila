@@ -557,10 +557,21 @@
                     }                    this.displayVideoInfo(data);
                     document.getElementById('qualitySection').classList.remove('hidden');
                     document.getElementById('cookieSection').classList.remove('hidden');
-                    document.getElementById('downloadBtn').classList.remove('hidden');
-
-                } catch (error) {
-                    this.showError(error.message);
+                    document.getElementById('downloadBtn').classList.remove('hidden');                } catch (error) {
+                    let errorMessage = error.message;
+                    
+                    // Provide more helpful error messages
+                    if (errorMessage.includes('Sign in to confirm you\'re not a bot')) {
+                        errorMessage = '⚠️ YouTube bot protection detected. Please upload cookies below or try a different video.';
+                    } else if (errorMessage.includes('Private video')) {
+                        errorMessage = '🔒 This video is private. Please upload cookies if you have access.';
+                    } else if (errorMessage.includes('Video unavailable')) {
+                        errorMessage = '❌ Video unavailable. It may be deleted, blocked, or region-restricted.';
+                    } else if (errorMessage.includes('Age-restricted')) {
+                        errorMessage = '🔞 Age-restricted video. Please upload cookies to download.';
+                    }
+                    
+                    this.showError(errorMessage);
                 } finally {
                     btn.textContent = originalText;
                     btn.disabled = false;
@@ -618,10 +629,21 @@
 
                     this.currentDownloadId = data.download_id;
                     this.showProgressSection();
-                    this.startProgressTracking();
-
-                } catch (error) {
-                    this.showError(error.message);
+                    this.startProgressTracking();                } catch (error) {
+                    let errorMessage = error.message;
+                    
+                    // Provide more helpful error messages
+                    if (errorMessage.includes('Sign in to confirm you\'re not a bot')) {
+                        errorMessage = '⚠️ YouTube bot protection detected. Please upload cookies below or try a different video.';
+                    } else if (errorMessage.includes('Private video')) {
+                        errorMessage = '🔒 This video is private. Please upload cookies if you have access.';
+                    } else if (errorMessage.includes('Video unavailable')) {
+                        errorMessage = '❌ Video unavailable. It may be deleted, blocked, or region-restricted.';
+                    } else if (errorMessage.includes('Age-restricted')) {
+                        errorMessage = '🔞 Age-restricted video. Please upload cookies to download.';
+                    }
+                    
+                    this.showError(errorMessage);
                     btn.textContent = 'Start Download';
                     btn.disabled = false;
                 }
