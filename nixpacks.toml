@@ -1,0 +1,16 @@
+# Install system packages
+[[build.env]]
+name = "NIXPACKS_PKGS"
+value = "ffmpeg"
+
+[phases.setup]
+nixPkgs = ["python39", "ffmpeg"]
+
+[phases.install]
+cmd = "pip install -r requirements.txt"
+
+[phases.build]
+cmd = "echo 'Build complete'"
+
+[start]
+cmd = "gunicorn --bind 0.0.0.0:$PORT source:app --timeout 300"
