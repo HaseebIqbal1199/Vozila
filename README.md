@@ -1,8 +1,8 @@
-# 🎥 YTDownloader Pro
+# 🎥 Vozilla
 
 A professional SaaS-level YouTube video and playlist downloader with premium UI and advanced features.
 
-![YTDownloader Pro](https://img.shields.io/badge/YTDownloader-Pro-blue?style=for-the-badge)
+![Vozilla](https://img.shields.io/badge/Vozilla-YouTube%20Downloader-blue?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.8+-green?style=for-the-badge&logo=python)
 ![Flask](https://img.shields.io/badge/Flask-2.3+-red?style=for-the-badge&logo=flask)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
@@ -33,8 +33,8 @@ A professional SaaS-level YouTube video and playlist downloader with premium UI 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/ytdownloader-pro.git
-   cd ytdownloader-pro
+   git clone https://github.com/HaseebIqbal1199/Vozila.git
+   cd Vozila
    ```
 
 2. **Create virtual environment**
@@ -54,153 +54,122 @@ A professional SaaS-level YouTube video and playlist downloader with premium UI 
    ```
 
 5. **Open in browser**
-   Navigate to http://localhost:3000
+   ```
+   http://localhost:3000
+   ```
 
-## 🛠️ Technology Stack
+## 🛠️ Advanced Setup
 
-- **Backend**: Flask (Python)
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **UI Framework**: Tailwind CSS
-- **Download Engine**: yt-dlp
-- **Rate Limiting**: Flask-Limiter
-- **Caching**: Flask-Caching
-- **Icons**: Heroicons
+### With FFmpeg (Recommended)
+For best quality downloads with video/audio merging:
 
-## 📁 Project Structure
+1. Download FFmpeg from [ffmpeg.org](https://ffmpeg.org/download.html)
+2. Add FFmpeg to your PATH or place `ffmpeg.exe` in the project folder
+3. Run using: `start_with_ffmpeg.bat`
 
-```
-YTDownloader/
-├── source.py              # Main Flask application
-├── requirements.txt       # Python dependencies
-├── start.bat             # Windows startup script
-├── .env                  # Environment configuration
-├── templates/
-│   └── index.html        # Main HTML template
-├── static/
-│   ├── style.css         # Additional CSS styles
-│   ├── robots.txt        # SEO robots file
-│   └── sitemap.xml       # SEO sitemap
-└── logs/                 # Application logs (auto-created)
+### Environment Variables
+Create a `.env` file in the project root:
+```env
+FLASK_ENV=development
+FLASK_DEBUG=true
+SECRET_KEY=your-secret-key-here
 ```
 
-## 🎯 API Endpoints
+## 🚀 Deployment
 
-### GET `/`
-Main application interface
+### Railway Deployment (Recommended)
+1. Push your code to GitHub
+2. Connect to [Railway](https://railway.app)
+3. Deploy directly from GitHub
+4. Add your custom domain
 
-### POST `/api/info`
-Get video/playlist information
-```json
+See `DEPLOYMENT_GUIDE.md` for detailed instructions.
+
+### Manual Deployment
+```bash
+# Install production dependencies
+pip install -r requirements.txt
+
+# Run with Gunicorn
+gunicorn --bind 0.0.0.0:3000 source:app
+```
+
+## 📊 SEO & Marketing
+
+Vozilla comes with enterprise-level SEO optimization:
+- ✅ Complete meta tags and structured data
+- ✅ Open Graph and Twitter Card support
+- ✅ Robots.txt and sitemap.xml
+- ✅ Performance optimized
+
+Run SEO analysis:
+```bash
+python seo_analyzer.py yourdomain.com
+```
+
+## 🛡️ Security Features
+
+- **No Data Storage** - Downloads are temporary and auto-deleted
+- **Privacy First** - No user tracking or data collection
+- **Secure Headers** - HTTPS redirect and security headers
+- **Rate Limiting** - (Disabled for open access)
+- **Cookie Support** - For accessing restricted content
+
+## 🎯 Technical Details
+
+### Supported Formats
+- **Video**: MP4, WebM, MKV (up to 4K)
+- **Audio**: MP3, M4A, FLAC
+- **Quality**: 144p to 4K+ (when available)
+
+### Advanced Features
+- **Format Selection** - Smart quality selection with fallbacks
+- **Progress Tracking** - Real-time download and merge progress
+- **Error Handling** - Comprehensive error recovery
+- **Multi-Client** - Support for different YouTube clients
+- **Async Processing** - Non-blocking download processing
+
+### Technology Stack
+- **Backend**: Python Flask
+- **Frontend**: HTML5, Tailwind CSS, Vanilla JavaScript
+- **Video Processing**: yt-dlp, FFmpeg
+- **Deployment**: Railway, Gunicorn
+- **SEO**: Structured Data, Meta Tags
+
+## 📖 API Documentation
+
+### Get Video Info
+```javascript
+POST /api/info
 {
   "url": "https://youtube.com/watch?v=..."
 }
 ```
 
-### POST `/api/download`
-Start download process
-```json
+### Start Download
+```javascript
+POST /api/download
 {
   "url": "https://youtube.com/watch?v=...",
-  "quality": "best"
+  "quality": "best",
+  "cookies": "optional_cookies_string"
 }
 ```
 
-### GET `/api/progress/<download_id>`
-Get download progress
-
-### GET `/api/download/<download_id>`
-Download completed files
-
-## ⚙️ Configuration
-
-Edit `.env` file to customize settings:
-
-```env
-# Flask Configuration
-FLASK_ENV=production
-SECRET_KEY=your-secret-key-here
-
-# Rate Limiting
-RATELIMIT_STORAGE_URL=memory://
-
-# Application Settings
-MAX_DOWNLOAD_SIZE=1073741824  # 1GB
-CLEANUP_INTERVAL=1800         # 30 minutes
-DOWNLOAD_EXPIRY=3600          # 1 hour
+### Check Progress
+```javascript
+GET /api/progress/{download_id}
 ```
 
-## 🔧 Advanced Features
-
-### Cookie Upload Support
-- Manual cookie upload for restricted videos
-- Support for age-restricted and private content
-- Netscape and JSON cookie format support
-- Secure temporary cookie storage
-
-### Caching
-- Video information cached for 1 hour
-- Supported sites list cached for 24 hours
-
-### Security & Privacy
-- Input validation and sanitization
-- CORS protection
-- Advanced bypass strategies for restricted content
-- No data persistence - completely anonymous
-- Temporary file cleanup
-- Secure cookie handling
-
-### SEO Optimization
-- Meta tags for social media
-- Open Graph tags
-- Twitter Card tags
-- Structured data (JSON-LD)
-- XML sitemap
-- Robots.txt
-- Semantic HTML structure
-
-## 🚀 Deployment
-
-### Development
-```bash
-python source.py
+### Download File
+```javascript
+GET /api/download/{download_id}
 ```
-
-### Production (using Gunicorn)
-```bash
-pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:3000 source:app
-```
-
-### Docker
-```dockerfile
-FROM python:3.9-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-EXPOSE 3000
-CMD ["python", "source.py"]
-```
-
-## 📊 Performance
-
-- **Download Speed**: Up to 50MB/s (depending on source)
-- **Concurrent Downloads**: 10 simultaneous downloads
-- **Memory Usage**: ~50MB base + ~10MB per active download
-- **Response Time**: <200ms for info requests
-
-## 🛡️ Legal & Compliance
-
-- Respects robots.txt and rate limits
-- No copyrighted content storage
-- User-initiated downloads only
-- Compliance with DMCA and fair use
-- Privacy-focused (no user data collection)
 
 ## 🤝 Contributing
 
-1. Fork the project
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
@@ -209,33 +178,22 @@ CMD ["python", "source.py"]
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔮 Roadmap
+## 🙏 Acknowledgments
 
-- [ ] User accounts and download history
-- [ ] Batch processing for multiple URLs
-- [ ] Video format conversion
-- [ ] Subtitle download support
-- [ ] Mobile app (React Native)
-- [ ] API rate limiting tiers
-- [ ] Premium features
-- [ ] Download scheduling
-- [ ] Cloud storage integration
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) - Amazing YouTube downloader library
+- [FFmpeg](https://ffmpeg.org/) - Video processing powerhouse
+- [Flask](https://flask.palletsprojects.com/) - Lightweight web framework
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
 
 ## 📞 Support
 
-- 📧 Email: support@ytdownloader.pro
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/ytdownloader-pro/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/yourusername/ytdownloader-pro/discussions)
-
-## 🏆 Acknowledgments
-
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) - The amazing YouTube download library
-- [Flask](https://flask.palletsprojects.com/) - The web framework
-- [Tailwind CSS](https://tailwindcss.com/) - The utility-first CSS framework
-- [Heroicons](https://heroicons.com/) - Beautiful SVG icons
+- **Documentation**: Check the `DEPLOYMENT_GUIDE.md` and `MARKETING_GUIDE.md`
+- **Issues**: Report bugs via GitHub Issues
+- **SEO Analysis**: Use the included `seo_analyzer.py`
+- **Deployment**: Follow `DEPLOYMENT_SUCCESS.md`
 
 ---
 
-<div align="center">
-  <b>Made with ❤️ for the YouTube community</b>
-</div>
+**⭐ Star this repository if you find it useful!**
+
+Made with ❤️ for the YouTube downloading community.
