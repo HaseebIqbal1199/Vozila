@@ -204,19 +204,56 @@ def is_valid_youtube_url(url):
 def get_video_info(url):
     """Get video information without downloading"""
     try:
+        # Rotate user agents to avoid detection
+        user_agents = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0'
+        ]
+        
+        import random
+        selected_ua = random.choice(user_agents)
+        
         ydl_opts = {
             'quiet': True,
             'no_warnings': True,
             'extract_flat': False,
             'force_json': True,
-            # Add user agent and headers to bypass restrictions
+            # Enhanced headers to bypass bot detection
             'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                'User-Agent': selected_ua,
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-us,en;q=0.5',
+                'Accept-Encoding': 'gzip, deflate',
+                'DNT': '1',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'none',
+                'Cache-Control': 'max-age=0'
+            },
+            # Additional options to bypass restrictions
+            'extractor_args': {
+                'youtube': {
+                    'skip': ['dash', 'hls'],
+                    'player_skip': ['configs'],
+                    'comment_sort': ['top'],
+                    'max_comments': ['100']
+                }
             },
             # Use cookies if needed
             'cookiefile': None,
             # Bypass age restrictions
             'age_limit': None,
+            # Add delays to avoid rate limiting
+            'sleep_interval': 1,
+            'max_sleep_interval': 3,
+            # Retry on errors
+            'retries': 3,
+            'fragment_retries': 3,
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -255,6 +292,15 @@ def download_video(url, quality, download_id, output_path):
                 merge_thread = threading.Thread(target=simulate_merge_progress)
                 merge_thread.daemon = True
                 merge_thread.start()
+          # Enhanced user agent rotation for downloads
+        user_agents = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        ]
+        
+        import random
+        selected_ua = random.choice(user_agents)
         
         ydl_opts = {
             'format': format_selector,
@@ -269,18 +315,38 @@ def download_video(url, quality, download_id, output_path):
             'keepvideo': False,  # Don't keep original video files after merging
             # FFmpeg configuration
             'ffmpeg_location': ffmpeg_path if ffmpeg_path else None,
-            # Simple, reliable configuration
-            'no_warnings': True,
-            'ignoreerrors': False,
-            # Simple headers that work reliably
+            # Enhanced headers to bypass bot detection
             'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'User-Agent': selected_ua,
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-us,en;q=0.5',
+                'Accept-Encoding': 'gzip, deflate',
+                'DNT': '1',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+                'Referer': 'https://www.youtube.com/',
+                'Origin': 'https://www.youtube.com'
+            },
+            # Enhanced extractor arguments
+            'extractor_args': {
+                'youtube': {
+                    'skip': ['dash', 'hls'],
+                    'player_skip': ['configs'],
+                    'innertube_host': 'studio.youtube.com',
+                    'innertube_key': None,
+                    'comment_sort': ['top']
+                }
             },
             # Cookie handling - Use manual cookies if available
             'cookiefile': uploaded_cookies.get(download_id),
-            # Basic retry settings
-            'retries': 3,
-            'fragment_retries': 3,            # Bypass geo-restrictions
+            # Enhanced retry and delay settings
+            'retries': 5,
+            'fragment_retries': 5,
+            'sleep_interval': 2,
+            'max_sleep_interval': 5,
+            # Additional bypass options
+            'no_warnings': True,
+            'ignoreerrors': False,# Bypass geo-restrictions
             'geo_bypass': True,
             'geo_bypass_country': 'US',
             
