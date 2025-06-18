@@ -212,8 +212,7 @@ def get_video_info(url):
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0'
         ]
-        
-        import random
+          import random
         selected_ua = random.choice(user_agents)
         
         ydl_opts = {
@@ -221,37 +220,46 @@ def get_video_info(url):
             'no_warnings': True,
             'extract_flat': False,
             'force_json': True,
-            # Enhanced headers to bypass bot detection
+            # Use alternative YouTube clients that don't require PO tokens
+            'extractor_args': {
+                'youtube': {
+                    # Use tv_embedded client as primary (doesn't require PO tokens)
+                    'player_client': 'tv_embedded,web_embedded,mweb',
+                    # Skip webpage requests to avoid cookie rotation
+                    'player_skip': 'webpage',
+                    # Additional bypass options
+                    'skip': ['dash', 'hls'],
+                    'innertube_host': 'studio.youtube.com',
+                    'comment_sort': ['top']
+                }
+            },
+            # Enhanced headers to mimic real browser
             'http_headers': {
                 'User-Agent': selected_ua,
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                'Accept-Language': 'en-us,en;q=0.5',
-                'Accept-Encoding': 'gzip, deflate',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate, br',
                 'DNT': '1',
                 'Connection': 'keep-alive',
                 'Upgrade-Insecure-Requests': '1',
                 'Sec-Fetch-Dest': 'document',
                 'Sec-Fetch-Mode': 'navigate',
                 'Sec-Fetch-Site': 'none',
-                'Cache-Control': 'max-age=0'
+                'Sec-Fetch-User': '?1',
+                'Cache-Control': 'max-age=0',
+                'Referer': 'https://www.youtube.com/',
+                'Origin': 'https://www.youtube.com'
             },
-            # Additional options to bypass restrictions
-            'extractor_args': {
-                'youtube': {
-                    'skip': ['dash', 'hls'],
-                    'player_skip': ['configs'],
-                    'comment_sort': ['top'],
-                    'max_comments': ['100']
-                }
-            },
-            # Use cookies if needed
+            # Cookie handling
             'cookiefile': None,
-            # Bypass age restrictions
+            # Bypass restrictions
             'age_limit': None,
-            # Add delays to avoid rate limiting
-            'sleep_interval': 1,
-            'max_sleep_interval': 3,
-            # Retry on errors
+            'geo_bypass': True,
+            'geo_bypass_country': 'US',
+            # Rate limiting to avoid triggering bot protection
+            'sleep_interval': 2,
+            'max_sleep_interval': 5,
+            # Retry settings
             'retries': 3,
             'fragment_retries': 3,
         }
@@ -314,36 +322,42 @@ def download_video(url, quality, download_id, output_path):
             'writesubtitles': False,
             'keepvideo': False,  # Don't keep original video files after merging
             # FFmpeg configuration
-            'ffmpeg_location': ffmpeg_path if ffmpeg_path else None,
-            # Enhanced headers to bypass bot detection
+            'ffmpeg_location': ffmpeg_path if ffmpeg_path else None,            # Enhanced headers to mimic real browser
             'http_headers': {
                 'User-Agent': selected_ua,
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                'Accept-Language': 'en-us,en;q=0.5',
-                'Accept-Encoding': 'gzip, deflate',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate, br',
                 'DNT': '1',
                 'Connection': 'keep-alive',
                 'Upgrade-Insecure-Requests': '1',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'none',
+                'Sec-Fetch-User': '?1',
+                'Cache-Control': 'max-age=0',
                 'Referer': 'https://www.youtube.com/',
                 'Origin': 'https://www.youtube.com'
             },
-            # Enhanced extractor arguments
+            # Use alternative YouTube clients that don't require PO tokens
             'extractor_args': {
                 'youtube': {
+                    # Use tv_embedded client as primary (doesn't require PO tokens)
+                    'player_client': 'tv_embedded,web_embedded,mweb',
+                    # Skip webpage requests to avoid cookie rotation
+                    'player_skip': 'webpage',
+                    # Additional bypass options
                     'skip': ['dash', 'hls'],
-                    'player_skip': ['configs'],
                     'innertube_host': 'studio.youtube.com',
-                    'innertube_key': None,
                     'comment_sort': ['top']
                 }
             },
             # Cookie handling - Use manual cookies if available
-            'cookiefile': uploaded_cookies.get(download_id),
-            # Enhanced retry and delay settings
+            'cookiefile': uploaded_cookies.get(download_id),            # Enhanced retry and delay settings
             'retries': 5,
             'fragment_retries': 5,
-            'sleep_interval': 2,
-            'max_sleep_interval': 5,
+            'sleep_interval': 3,
+            'max_sleep_interval': 8,
             # Additional bypass options
             'no_warnings': True,
             'ignoreerrors': False,# Bypass geo-restrictions
