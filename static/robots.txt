@@ -3,7 +3,7 @@ Allow: /
 Disallow: /api/
 Disallow: /static/logs/
 
-Sitemap: https://vozilla.com/sitemap.xml
+Sitemap: https://vozila.com/sitemap.xml
 
 # Crawl-delay for respectful crawling
 Crawl-delay: 1
