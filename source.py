@@ -202,10 +202,12 @@ def is_valid_youtube_url(url):
     return youtube_regex.match(url) or playlist_regex.match(url)
 
 def get_video_info(url):
-    """Get video information with multiple fallback strategies"""
+    """Get video information with advanced bot protection bypass"""
+    
+    # Most effective strategies based on latest yt-dlp research
     strategies = [
         {
-            'name': 'tv_embedded',
+            'name': 'tv_embedded_optimized',
             'config': {
                 'quiet': True,
                 'no_warnings': True,
@@ -215,21 +217,51 @@ def get_video_info(url):
                     'youtube': {
                         'player_client': 'tv_embedded',
                         'player_skip': 'webpage',
-                        'skip': ['dash', 'hls']
+                        'skip': ['dash', 'hls'],
+                        'comment_sort': ['top'],
+                        'max_comments': ['0']
                     }
                 },
                 'http_headers': {
-                    'User-Agent': 'Mozilla/5.0 (SMART-TV; LINUX; Tizen 2.4.0) AppleWebKit/538.1 (KHTML, like Gecko) Version/2.4.0 TV Safari/538.1',
+                    'User-Agent': 'Mozilla/5.0 (SMART-TV; LINUX; Tizen 6.0) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/4.0 Chrome/76.0.3809.146 TV Safari/537.36',
                     'Accept': '*/*',
                     'Accept-Language': 'en-US,en;q=0.9',
-                    'Connection': 'keep-alive'
+                    'Connection': 'keep-alive',
+                    'Cache-Control': 'no-cache'
                 },
                 'sleep_interval': 1,
-                'retries': 2
+                'retries': 1,
+                'socket_timeout': 30
             }
         },
         {
-            'name': 'web_embedded',  
+            'name': 'android_testsuite',
+            'config': {
+                'quiet': True,
+                'no_warnings': True,
+                'extract_flat': False,
+                'force_json': True,
+                'extractor_args': {
+                    'youtube': {
+                        'player_client': 'android_testsuite',
+                        'player_skip': 'webpage',
+                        'skip': ['dash', 'hls'],
+                        'include_live_dash': False
+                    }
+                },
+                'http_headers': {
+                    'User-Agent': 'com.google.android.youtube/17.36.4 (Linux; U; Android 12; SM-G998B) gzip',
+                    'Accept': '*/*',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'X-YouTube-Client-Name': '30',
+                    'X-YouTube-Client-Version': '17.36.4'
+                },
+                'sleep_interval': 2,
+                'retries': 1
+            }
+        },
+        {
+            'name': 'web_embedded_fresh',
             'config': {
                 'quiet': True,
                 'no_warnings': True,
@@ -238,21 +270,47 @@ def get_video_info(url):
                 'extractor_args': {
                     'youtube': {
                         'player_client': 'web_embedded',
-                        'player_skip': 'webpage'
+                        'player_skip': 'webpage',
+                        'skip': ['dash', 'hls']
                     }
                 },
                 'http_headers': {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
                     'Accept-Language': 'en-US,en;q=0.9',
-                    'Referer': 'https://www.youtube.com/'
+                    'Referer': 'https://www.youtube.com/embed/',
+                    'Origin': 'https://www.youtube.com',
+                    'Sec-Fetch-Dest': 'iframe',
+                    'Sec-Fetch-Mode': 'navigate'
                 },
-                'sleep_interval': 2,
-                'retries': 2
+                'sleep_interval': 3,
+                'retries': 1
             }
         },
         {
-            'name': 'mweb',
+            'name': 'ios_music',
+            'config': {
+                'quiet': True,
+                'no_warnings': True,
+                'extract_flat': False,
+                'force_json': True,
+                'extractor_args': {
+                    'youtube': {
+                        'player_client': 'ios_music',
+                        'player_skip': 'webpage'
+                    }
+                },
+                'http_headers': {
+                    'User-Agent': 'com.google.ios.youtubemusic/4.57.1 (iPhone14,3; U; CPU iOS 15_6 like Mac OS X)',
+                    'Accept': '*/*',
+                    'Accept-Language': 'en-US,en;q=0.9'
+                },
+                'sleep_interval': 2,
+                'retries': 1
+            }
+        },
+        {
+            'name': 'mweb_tier1',
             'config': {
                 'quiet': True,
                 'no_warnings': True,
@@ -261,20 +319,22 @@ def get_video_info(url):
                 'extractor_args': {
                     'youtube': {
                         'player_client': 'mweb',
-                        'player_skip': 'webpage'
+                        'player_skip': 'webpage',
+                        'skip': ['dash', 'hls']
                     }
                 },
                 'http_headers': {
-                    'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36',
+                    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                    'Accept-Language': 'en-US,en;q=0.9'
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Referer': 'https://m.youtube.com/'
                 },
                 'sleep_interval': 3,
-                'retries': 2
+                'retries': 1
             }
         },
         {
-            'name': 'android',
+            'name': 'web_safari_fallback',
             'config': {
                 'quiet': True,
                 'no_warnings': True,
@@ -282,34 +342,57 @@ def get_video_info(url):
                 'force_json': True,
                 'extractor_args': {
                     'youtube': {
-                        'player_client': 'android',
-                        'player_skip': 'webpage'
+                        'player_client': 'web_safari',
+                        'player_skip': 'configs',
+                        'skip': ['dash']
                     }
                 },
                 'http_headers': {
-                    'User-Agent': 'com.google.android.youtube/17.36.4 (Linux; U; Android 12; SM-G998B) gzip',
-                    'Accept': '*/*',
-                    'Accept-Language': 'en-US,en;q=0.9'
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Referer': 'https://www.youtube.com/'
                 },
                 'sleep_interval': 4,
-                'retries': 2
+                'retries': 1
             }
         }
     ]
     
-    for strategy in strategies:
+    import time
+    import random
+    
+    for i, strategy in enumerate(strategies):
         try:
             print(f"Trying strategy {strategy['name']}")
+            
+            # Progressive delay between attempts
+            if i > 0:
+                delay = random.uniform(2, 5 + i)
+                time.sleep(delay)
+            
             with yt_dlp.YoutubeDL(strategy['config']) as ydl:
                 info = ydl.extract_info(url, download=False)
-                print(f"Strategy {strategy['name']} succeeded!")
-                return info
+                if info and 'title' in info:
+                    print(f"Strategy {strategy['name']} succeeded!")
+                    return info
+                    
         except Exception as e:
-            print(f"Strategy {strategy['name']} failed: {str(e)[:100]}...")
+            error_msg = str(e)
+            print(f"Strategy {strategy['name']} failed: {error_msg[:100]}...")
+            
+            # Check if we should continue or abort
+            if 'private' in error_msg.lower() and 'video' in error_msg.lower():
+                # Private video - no point trying other strategies without cookies
+                raise Exception("This video is private. Please upload YouTube cookies to access it.")
+            elif 'unavailable' in error_msg.lower() and 'video' in error_msg.lower():
+                # Video unavailable - no point trying other strategies
+                raise Exception("Video is unavailable. It may be deleted, blocked, or region-restricted.")
+            
             continue
     
-    # If all strategies fail, raise an exception
-    raise Exception("All extraction strategies failed. Video may be unavailable, private, or region-blocked.")
+    # If all strategies fail, provide helpful error
+    raise Exception("All extraction strategies failed. This video may require cookies, be age-restricted, private, or unavailable in your region. Please try uploading YouTube cookies or try a different video.")
 
 def download_video(url, quality, download_id, output_path):
     """Download video in background thread"""
